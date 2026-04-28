@@ -1,4 +1,4 @@
-# Rebuilt-Tallahassee
+# Rebuilt
 FRC Team 10219's 2026 FRC robot code for REBUILT. Our robot's code is written in Java and is based on WPILib's Java control system, with logging and replay built on AdvantageKit and the AdvantageKit drive + vision template.
 
 The code is divided into several packages, each responsible for a different aspect of robot function. This README explains the function of each package, some highlights of the architecture, and a few of the variable naming conventions used. Additional information about each specific class can be found in that class's Java file.
