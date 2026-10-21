@@ -15,15 +15,13 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.superstructure.Superstructure;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class AutoChooser {
   private final LoggedDashboardChooser<Command> chooser;
 
-  public AutoChooser(Drive drive, Intake intake, Superstructure superstructure) {
-    registerNamedCommands(drive, intake, superstructure);
+  public AutoChooser(Drive drive) {
+    registerNamedCommands(drive);
 
     chooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -47,21 +45,7 @@ public class AutoChooser {
     }
   }
 
-  private void registerNamedCommands(Drive drive, Intake intake, Superstructure superstructure) {
-    NamedCommands.registerCommand(
-        "Intake Deploy", Commands.runOnce(() -> intake.setGoal(Intake.Goal.DEPLOY)));
-    NamedCommands.registerCommand(
-        "Intake", Commands.runOnce(() -> intake.setGoal(Intake.Goal.INTAKE)));
-    NamedCommands.registerCommand(
-        "Intake Stow", Commands.runOnce(() -> intake.setGoal(Intake.Goal.STOW)));
-    NamedCommands.registerCommand(
-        "Intake Feed", Commands.runOnce(() -> intake.setGoal(Intake.Goal.FEED)));
-    NamedCommands.registerCommand(
-        "Intake Idle", Commands.runOnce(() -> intake.setGoal(Intake.Goal.IDLE)));
-    NamedCommands.registerCommand(
-        "Shoot", Commands.runOnce(() -> superstructure.setGoal(Superstructure.Goal.SHOOT)));
-    NamedCommands.registerCommand(
-        "Stop Shooting", Commands.runOnce(() -> superstructure.setGoal(Superstructure.Goal.IDLE)));
+  private void registerNamedCommands(Drive drive) {
     NamedCommands.registerCommand("Auto Aim", DriveCommands.aimAtTarget(drive));
   }
 

@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.Mode;
 import frc.robot.RobotState.ShotMode;
-import frc.robot.commands.AimUtil;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.oi.Controls;
@@ -27,29 +26,6 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
-import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.Pivot.PivotIO;
-import frc.robot.subsystems.intake.Pivot.PivotIOSim;
-import frc.robot.subsystems.intake.Pivot.PivotIOTalonFX;
-import frc.robot.subsystems.intake.Rollers.RollersIO;
-import frc.robot.subsystems.intake.Rollers.RollersIOSim;
-import frc.robot.subsystems.intake.Rollers.RollersIOTalonFX;
-import frc.robot.subsystems.superstructure.Superstructure;
-import frc.robot.subsystems.superstructure.floor.FloorIO;
-import frc.robot.subsystems.superstructure.floor.FloorIOSim;
-import frc.robot.subsystems.superstructure.floor.FloorIOTalonFX;
-import frc.robot.subsystems.superstructure.hood.HoodIO;
-import frc.robot.subsystems.superstructure.hood.HoodIOSim;
-import frc.robot.subsystems.superstructure.hood.HoodIOTalonFX;
-import frc.robot.subsystems.superstructure.shooter.ShooterIO;
-import frc.robot.subsystems.superstructure.shooter.ShooterIOSim;
-import frc.robot.subsystems.superstructure.shooter.ShooterIOTalonFX;
-import frc.robot.subsystems.superstructure.transfer.TransferIO;
-import frc.robot.subsystems.superstructure.transfer.TransferIOSim;
-import frc.robot.subsystems.superstructure.transfer.TransferIOTalonFX;
-import frc.robot.subsystems.superstructure.wall.WallIO;
-import frc.robot.subsystems.superstructure.wall.WallIOSim;
-import frc.robot.subsystems.superstructure.wall.WallIOTalonFX;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
@@ -65,8 +41,6 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   private Drive drive;
   private Vision vision;
-  private Superstructure superstructure;
-  private Intake intake;
 
   private final ZoneVisualizer zoneVisualizer = new ZoneVisualizer();
   private final Controls controls;
@@ -87,14 +61,6 @@ public class RobotContainer {
                   new ModuleIOTalonFX(TunerConstants.FrontRight),
                   new ModuleIOTalonFX(TunerConstants.BackLeft),
                   new ModuleIOTalonFX(TunerConstants.BackRight));
-          superstructure =
-              new Superstructure(
-                  new ShooterIOTalonFX(),
-                  new HoodIOTalonFX(),
-                  new WallIOTalonFX(),
-                  new TransferIOTalonFX(),
-                  new FloorIOTalonFX());
-          intake = new Intake(new PivotIOTalonFX(), new RollersIOTalonFX());
           vision =
               new Vision(
                   drive::addVisionMeasurement,
@@ -121,14 +87,6 @@ public class RobotContainer {
                   new ModuleIOSim(TunerConstants.FrontRight),
                   new ModuleIOSim(TunerConstants.BackLeft),
                   new ModuleIOSim(TunerConstants.BackRight));
-          superstructure =
-              new Superstructure(
-                  new ShooterIOSim(),
-                  new HoodIOSim(),
-                  new WallIOSim(),
-                  new TransferIOSim(),
-                  new FloorIOSim());
-          intake = new Intake(new PivotIOSim(), new RollersIOSim());
         }
       }
     }
@@ -146,18 +104,6 @@ public class RobotContainer {
     if (vision == null) {
       vision = new Vision(drive::addVisionMeasurement, new VisionIO[] {});
     }
-    if (intake == null) {
-      intake = new Intake(new PivotIO() {}, new RollersIO() {});
-    }
-    if (superstructure == null) {
-      superstructure =
-          new Superstructure(
-              new ShooterIO() {},
-              new HoodIO() {},
-              new WallIO() {},
-              new TransferIO() {},
-              new FloorIO() {});
-    }
 
     // Shot mode dashboard chooser
     shotModeChooser = new LoggedDashboardChooser<>("Shot Mode");
@@ -170,7 +116,7 @@ public class RobotContainer {
     }
 
     controls = new ControlsXbox(0);
-    chooser = new AutoChooser(drive, intake, superstructure);
+    chooser = new AutoChooser(drive);
     configureBindings();
   }
 
@@ -210,22 +156,13 @@ public class RobotContainer {
                               == ZoneController.ZoneAction.FERRY_LEFT
                           || ZoneController.getInstance()
                                   .determineAction(ZoneController.getInstance().getCurrentZone())
-                              == ZoneController.ZoneAction.FERRY_RIGHT) {
-                        superstructure.setGoal(Superstructure.Goal.FERRY);
-                      } else {
-                        superstructure.setGoal(Superstructure.Goal.SHOOT);
-                      }
-                      headingOverride = Optional.of(AimUtil.calculateHeading());
-                      if (superstructure.getState() == Superstructure.SystemState.SHOOTING) {
-                        drive.setGoal(Drive.Goal.SHOOT_LOCKED);
-                      }
+                              == ZoneController.ZoneAction.FERRY_RIGHT) {}
                     })))
         .onFalse(
             Commands.runOnce(
                 () -> {
                   headingOverride = Optional.empty();
                   drive.setGoal(Drive.Goal.TELEOP);
-                  superstructure.setGoal(Superstructure.Goal.IDLE);
                 }));
 
     controls
@@ -234,7 +171,6 @@ public class RobotContainer {
             Commands.parallel(
                 Commands.run(
                     () -> {
-                      superstructure.setGoal(Superstructure.Goal.FERRY);
                       Translation2d robot =
                           RobotState.getInstance().getEstimatedPose().getTranslation();
                       Translation2d target =
@@ -245,7 +181,6 @@ public class RobotContainer {
             Commands.runOnce(
                 () -> {
                   headingOverride = Optional.empty();
-                  superstructure.setGoal(Superstructure.Goal.IDLE);
                 }));
 
     controls
@@ -254,7 +189,6 @@ public class RobotContainer {
             Commands.parallel(
                 Commands.run(
                     () -> {
-                      superstructure.setGoal(Superstructure.Goal.FERRY);
                       Translation2d robot =
                           RobotState.getInstance().getEstimatedPose().getTranslation();
                       Translation2d target =
@@ -265,20 +199,7 @@ public class RobotContainer {
             Commands.runOnce(
                 () -> {
                   headingOverride = Optional.empty();
-                  superstructure.setGoal(Superstructure.Goal.IDLE);
                 }));
-
-    controls.stowHood().toggleOnTrue(superstructure.stowCommand());
-
-    controls.shootBackup().whileTrue((superstructure.shootCommand()));
-
-    controls.unclog().whileTrue(superstructure.unclogCommand());
-
-    // Intake
-    controls.intake().whileTrue(intake.intakeCommand());
-    controls.stowIntake().onTrue(intake.stowCommand());
-
-    controls.spit().whileTrue(intake.ejectCommand().alongWith(superstructure.undexCommand()));
   }
 
   public void periodic() {
