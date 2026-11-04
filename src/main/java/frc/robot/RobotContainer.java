@@ -64,7 +64,7 @@ public class RobotContainer {
           vision =
               new Vision(
                   drive::addVisionMeasurement,
-                  new VisionIOLimelight("limelight-front", drive::getRotation));
+                  new VisionIOLimelight("barbuda", drive::getRotation));
         }
         case PRACBOT -> {
           drive =
@@ -77,7 +77,7 @@ public class RobotContainer {
           vision =
               new Vision(
                   drive::addVisionMeasurement,
-                  new VisionIOLimelight("limelight-front", drive::getRotation));
+                  new VisionIOLimelight("barbuda", drive::getRotation));
         }
         case SIMBOT -> {
           drive =
