@@ -20,6 +20,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.oi.Controls;
 import frc.robot.oi.ControlsXbox;
+import frc.robot.subsystems.SS_Intake;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -41,6 +42,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   private Drive drive;
   private Vision vision;
+  private final SS_Intake intake = new SS_Intake();
 
   private final ZoneVisualizer zoneVisualizer = new ZoneVisualizer();
   private final Controls controls;
